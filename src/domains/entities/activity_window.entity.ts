@@ -1,6 +1,7 @@
-import { AccountId } from './account.entity';
+import { fork } from '@fluss/core';
 
 import { Activity } from './activity.entity';
+import { AccountId } from './account.entity';
 import { Money, subtractMoney, sumMoney, zero } from './money.entity';
 
 export interface ActivityWindow {
@@ -16,19 +17,28 @@ export const addActivityToWindow = (
   activity: Activity
 ): ActivityWindow => createActivityWindow(window.activities.concat(activity));
 
-export const calculateBalance = (
+const sumMoneyWith =
+  (predicate: (activity: Activity) => boolean) =>
+  (window: ActivityWindow): Money =>
+    window.activities
+      .filter(predicate)
+      .map((activity) => activity.money)
+      .reduce(sumMoney, zero());
+
+const calculateDepositBalance = (
   window: ActivityWindow,
   accountId: AccountId
-): Money => {
-  const depositBalance = window.activities
-    .filter((activity) => activity.targetAccountId === accountId)
-    .map((activity) => activity.money)
-    .reduce(sumMoney, zero());
+): Money =>
+  sumMoneyWith((activity) => activity.targetAccountId === accountId)(window);
 
-  const withdrawalBalance = window.activities
-    .filter((activity) => activity.sourceAccountId === accountId)
-    .map((activity) => activity.money)
-    .reduce(sumMoney, zero());
+const calculateWithdrawalBalance = (
+  window: ActivityWindow,
+  accountId: AccountId
+): Money =>
+  sumMoneyWith((activity) => activity.sourceAccountId === accountId)(window);
 
-  return subtractMoney(depositBalance, withdrawalBalance);
-};
+export const calculateBalance = fork(
+  subtractMoney,
+  calculateDepositBalance,
+  calculateWithdrawalBalance
+);

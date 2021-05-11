@@ -12,16 +12,14 @@ import {
 
 describe('sendMoneyService', () => {
   it('should success transaction', () => {
+    const accountId = '41';
+
     const loadAccountPort: LoadAccountPort = jest.fn((_: AccountId) =>
-      createAccount(createMoney(10), createActivityWindow())
+      createAccount(accountId, createMoney(10), createActivityWindow())
     );
     const updateAccountPort: UpdateAccountPort = jest.fn((_: Account) => true);
 
-    const command = createSendMoneyCommand(
-      '41' as AccountId,
-      '42' as AccountId,
-      createMoney(4)
-    );
+    const command = createSendMoneyCommand(accountId, '42', createMoney(4));
 
     sendMoneyService(loadAccountPort, updateAccountPort)(command);
 

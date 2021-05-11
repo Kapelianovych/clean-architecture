@@ -1,10 +1,10 @@
 import { v4 as id } from 'uuid';
-import { Brand } from '@fluss/core';
+import { Flavor } from '@fluss/core';
 
 import { Money } from './money.entity';
 import { AccountId } from './account.entity';
 
-export type ActivityId = Brand<string, 'ActivityId'>;
+export type ActivityId = Flavor<string, 'ActivityId'>;
 
 export interface Activity {
   readonly _id: ActivityId;

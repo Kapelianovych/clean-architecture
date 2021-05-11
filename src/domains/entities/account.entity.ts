@@ -1,21 +1,21 @@
-import { v4 as id } from 'uuid';
-import { Brand, pipe } from '@fluss/core';
+import { Flavor, pipe } from '@fluss/core';
 
 import { createActivity } from './activity.entity';
-import {
-  Money,
-  sumMoney,
-  subtractMoney,
-  isPositiveOrZero,
-} from './money.entity';
 import {
   ActivityWindow,
   calculateBalance,
   addActivityToWindow,
   createActivityWindow,
 } from './activity_window.entity';
+import {
+  Money,
+  sumMoney,
+  negateMoney,
+  subtractMoney,
+  isPositiveOrZero,
+} from './money.entity';
 
-export type AccountId = Brand<string, 'AccountId'>;
+export type AccountId = Flavor<string, 'AccountId'>;
 
 type AccountState = {
   readonly frozen: boolean;
@@ -34,11 +34,12 @@ const createAccountState = (
 ): AccountState => ({ frozen: false, closed: false, ...state });
 
 export const createAccount = (
+  id: AccountId,
   balance: Money,
   activityWindow: ActivityWindow = createActivityWindow(),
   state?: Partial<AccountState>
 ): Account => ({
-  _id: id() as AccountId,
+  _id: id,
   state: createAccountState(state),
   activityWindow,
   baseLineBalance: balance,
@@ -56,6 +57,21 @@ const mayWithdrawMoney = pipe(subtractMoney, isPositiveOrZero);
 const mayDepositMoney = (account: Account) =>
   !account.state.closed && !account.state.frozen;
 
+const attachActivity = (
+  sourceAccount: Account,
+  targetAccount: Account,
+  money: Money
+): Account =>
+  createAccount(
+    sourceAccount._id,
+    sourceAccount.baseLineBalance,
+    addActivityToWindow(
+      sourceAccount.activityWindow,
+      createActivity(sourceAccount._id, targetAccount._id, money)
+    ),
+    sourceAccount.state
+  );
+
 export const withdrawMoney = (
   sourceAccount: Account,
   targetAccount: Account,
@@ -64,15 +80,8 @@ export const withdrawMoney = (
   mayWithdrawMoney(getBalance(sourceAccount), money) &&
   mayDepositMoney(targetAccount)
     ? {
-        sourceAccount: createAccount(
-          sourceAccount.baseLineBalance,
-          addActivityToWindow(
-            sourceAccount.activityWindow,
-            createActivity(sourceAccount._id, targetAccount._id, money)
-          ),
-          sourceAccount.state
-        ),
-        targetAccount,
+        sourceAccount: attachActivity(sourceAccount, targetAccount, money),
+        targetAccount: attachActivity(sourceAccount, targetAccount, money),
       }
     : { sourceAccount, targetAccount };
 
@@ -80,4 +89,4 @@ export const depositMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
-) => withdrawMoney(targetAccount, sourceAccount, money);
+) => withdrawMoney(sourceAccount, targetAccount, negateMoney(money));
