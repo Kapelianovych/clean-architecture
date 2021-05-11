@@ -1,6 +1,6 @@
 import { Flavor, pipe } from '@fluss/core';
 
-import { createActivity } from './activity.entity';
+import { Activity, createActivity } from './activity.entity';
 import {
   ActivityWindow,
   calculateBalance,
@@ -57,19 +57,12 @@ const mayWithdrawMoney = pipe(subtractMoney, isPositiveOrZero);
 const mayDepositMoney = (account: Account) =>
   !account.state.closed && !account.state.frozen;
 
-const attachActivity = (
-  sourceAccount: Account,
-  targetAccount: Account,
-  money: Money
-): Account =>
+const attachActivity = (account: Account, activity: Activity): Account =>
   createAccount(
-    sourceAccount._id,
-    sourceAccount.baseLineBalance,
-    addActivityToWindow(
-      sourceAccount.activityWindow,
-      createActivity(sourceAccount._id, targetAccount._id, money)
-    ),
-    sourceAccount.state
+    account._id,
+    account.baseLineBalance,
+    addActivityToWindow(account.activityWindow, activity),
+    account.state
   );
 
 export const withdrawMoney = (
@@ -80,8 +73,14 @@ export const withdrawMoney = (
   mayWithdrawMoney(getBalance(sourceAccount), money) &&
   mayDepositMoney(targetAccount)
     ? {
-        sourceAccount: attachActivity(sourceAccount, targetAccount, money),
-        targetAccount: attachActivity(sourceAccount, targetAccount, money),
+        sourceAccount: attachActivity(
+          sourceAccount,
+          createActivity(sourceAccount._id, targetAccount._id, money)
+        ),
+        targetAccount: attachActivity(
+          targetAccount,
+          createActivity(sourceAccount._id, targetAccount._id, money)
+        ),
       }
     : { sourceAccount, targetAccount };
 
