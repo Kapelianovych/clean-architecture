@@ -9,13 +9,12 @@ export const sendMoneyService =
     loadAccountPort: LoadAccountPort,
     updateAccountPort: UpdateAccountPort
   ): SendMoneyUseCase =>
-  (command: SendMoneyCommand) => {
-    const { sourceAccount, targetAccount } = withdrawMoney(
+  (command: SendMoneyCommand) =>
+    withdrawMoney(
       loadAccountPort(command.sourceAccountId),
       loadAccountPort(command.targetAccountId),
       command.money
-    );
-
-    updateAccountPort(sourceAccount);
-    updateAccountPort(targetAccount);
-  };
+    ).map(({ sourceAccount, targetAccount }) => {
+      updateAccountPort(sourceAccount);
+      updateAccountPort(targetAccount);
+    });
