@@ -10,11 +10,11 @@ describe('activity window entity', () => {
     const accountId = '57';
 
     const window = createActivityWindow([
-      createActivity('41', accountId, createMoney(8)),
-      createActivity('41', accountId, createMoney(5)),
-      createActivity(accountId, '41', createMoney(3)),
-      createActivity('41', accountId, createMoney(9)),
-      createActivity(accountId, '41', createMoney(1)),
+      createActivity('41', '41', accountId, createMoney(8)),
+      createActivity('41', '41', accountId, createMoney(5)),
+      createActivity(accountId, accountId, '41', createMoney(3)),
+      createActivity('41', '41', accountId, createMoney(9)),
+      createActivity(accountId, accountId, '41', createMoney(1)),
     ]);
 
     expect(calculateBalance(window, accountId)).toEqual(createMoney(18));

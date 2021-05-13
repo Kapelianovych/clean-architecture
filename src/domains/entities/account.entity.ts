@@ -78,13 +78,23 @@ export const withdrawMoney = (
   mayWithdrawMoney(getBalance(sourceAccount), money)
     ? mayDepositMoney(targetAccount)
       ? right({
-          sourceAccount: attachActivity(
+          emitter: attachActivity(
             sourceAccount,
-            createActivity(sourceAccount._id, targetAccount._id, money)
+            createActivity(
+              sourceAccount._id,
+              sourceAccount._id,
+              targetAccount._id,
+              money
+            )
           ),
-          targetAccount: attachActivity(
+          recipient: attachActivity(
             targetAccount,
-            createActivity(sourceAccount._id, targetAccount._id, money)
+            createActivity(
+              sourceAccount._id,
+              sourceAccount._id,
+              targetAccount._id,
+              money
+            )
           ),
         })
       : left(AccountResult.DEPOSIT_NOT_PERMITTED)
@@ -94,4 +104,4 @@ export const depositMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
-) => withdrawMoney(sourceAccount, targetAccount, negateMoney(money));
+) => withdrawMoney(targetAccount, sourceAccount, money);

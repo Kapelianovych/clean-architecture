@@ -14,9 +14,9 @@ describe('account entity', () => {
     const accountId = '41';
 
     const activityWindow = createActivityWindow([
-      createActivity('42', accountId, createMoney(30)),
-      createActivity('42', accountId, createMoney(170)),
-      createActivity(accountId, '42', createMoney(300)),
+      createActivity('42', '42', accountId, createMoney(30)),
+      createActivity('42', '42', accountId, createMoney(170)),
+      createActivity(accountId, accountId, '42', createMoney(300)),
     ]);
     const account = createAccount(accountId, createMoney(100), activityWindow);
 
@@ -35,9 +35,9 @@ describe('account entity', () => {
     const result = withdrawMoney(sourceAccount, targetAccount, money);
 
     expect(result.isRight()).toBe(true);
-    result.map(({ sourceAccount: source, targetAccount: target }) => {
-      expect(getBalance(source)).toEqual(createMoney(8));
-      expect(getBalance(target)).toEqual(createMoney(9));
+    result.map(({ emitter, recipient }) => {
+      expect(getBalance(emitter)).toEqual(createMoney(8));
+      expect(getBalance(recipient)).toEqual(createMoney(9));
     });
   });
 
@@ -51,9 +51,9 @@ describe('account entity', () => {
     const result = depositMoney(sourceAccount, targetAccount, createMoney(2));
 
     expect(result.isRight()).toBe(true);
-    result.map(({ sourceAccount: source, targetAccount: target }) => {
-      expect(getBalance(source)).toEqual(createMoney(12));
-      expect(getBalance(target)).toEqual(createMoney(5));
+    result.map(({ emitter, recipient }) => {
+      expect(getBalance(recipient)).toEqual(createMoney(12));
+      expect(getBalance(emitter)).toEqual(createMoney(5));
     });
   });
 

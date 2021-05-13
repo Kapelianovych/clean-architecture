@@ -10,11 +10,13 @@ export interface Activity {
   readonly _id: ActivityId;
   readonly money: Money;
   readonly timestamp: Date;
+  readonly ownerAccountId: AccountId;
   readonly sourceAccountId: AccountId;
   readonly targetAccountId: AccountId;
 }
 
 export const createActivity = (
+  ownerAccountId: AccountId,
   sourceAccountId: AccountId,
   targetAccountId: AccountId,
   money: Money
@@ -22,6 +24,7 @@ export const createActivity = (
   _id: id() as ActivityId,
   money,
   timestamp: new Date(),
+  ownerAccountId,
   sourceAccountId,
   targetAccountId,
 });
