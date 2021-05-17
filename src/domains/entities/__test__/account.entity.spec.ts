@@ -6,16 +6,19 @@ import {
   depositMoney,
   createAccount,
   withdrawMoney,
+  AccountResult,
 } from '../account.entity';
 
 describe('account entity', () => {
   it("should get account's balance", () => {
     const accountId = '41';
 
+    const date = new Date();
+
     const activityWindow = createActivityWindow([
-      createActivity('42', accountId, createMoney(30)),
-      createActivity('42', accountId, createMoney(170)),
-      createActivity(accountId, '42', createMoney(300)),
+      createActivity('42', '42', accountId, createMoney(30), date, 1),
+      createActivity('42', '42', accountId, createMoney(170), date, 2),
+      createActivity(accountId, accountId, '42', createMoney(300), date, 3),
     ]);
     const account = createAccount(accountId, createMoney(100), activityWindow);
 
@@ -31,14 +34,13 @@ describe('account entity', () => {
 
     const money = createMoney(2);
 
-    const { sourceAccount: source, targetAccount: target } = withdrawMoney(
-      sourceAccount,
-      targetAccount,
-      money
-    );
+    const result = withdrawMoney(sourceAccount, targetAccount, money);
 
-    expect(getBalance(source)).toEqual(createMoney(8));
-    expect(getBalance(target)).toEqual(createMoney(9));
+    expect(result.isRight()).toBe(true);
+    result.map(({ emitter, recipient }) => {
+      expect(getBalance(emitter)).toEqual(createMoney(8));
+      expect(getBalance(recipient)).toEqual(createMoney(9));
+    });
   });
 
   it('should deposit money', () => {
@@ -48,14 +50,13 @@ describe('account entity', () => {
     const sourceAccount = createAccount(sourceAccountId, createMoney(10));
     const targetAccount = createAccount(targetAccountId, createMoney(7));
 
-    const { sourceAccount: source, targetAccount: target } = depositMoney(
-      sourceAccount,
-      targetAccount,
-      createMoney(2)
-    );
+    const result = depositMoney(sourceAccount, targetAccount, createMoney(2));
 
-    expect(getBalance(source)).toEqual(createMoney(12));
-    expect(getBalance(target)).toEqual(createMoney(5));
+    expect(result.isRight()).toBe(true);
+    result.map(({ emitter, recipient }) => {
+      expect(getBalance(recipient)).toEqual(createMoney(12));
+      expect(getBalance(emitter)).toEqual(createMoney(5));
+    });
   });
 
   it('should not deposit money if target account is frozen', () => {
@@ -67,14 +68,10 @@ describe('account entity', () => {
       { frozen: true }
     );
 
-    const { sourceAccount: source, targetAccount: target } = withdrawMoney(
-      sourceAccount,
-      targetAccount,
-      createMoney(2)
-    );
+    const result = withdrawMoney(sourceAccount, targetAccount, createMoney(2));
 
-    expect(getBalance(source)).toEqual(createMoney(10));
-    expect(getBalance(target)).toEqual(createMoney(7));
+    expect(result.isLeft()).toBe(true);
+    expect(result.extract()).toBe(AccountResult.DEPOSIT_NOT_PERMITTED);
   });
 
   it('should not deposit money if target account is closed', () => {
@@ -86,27 +83,19 @@ describe('account entity', () => {
       { closed: true }
     );
 
-    const { sourceAccount: source, targetAccount: target } = withdrawMoney(
-      sourceAccount,
-      targetAccount,
-      createMoney(2)
-    );
+    const result = withdrawMoney(sourceAccount, targetAccount, createMoney(2));
 
-    expect(getBalance(source)).toEqual(createMoney(10));
-    expect(getBalance(target)).toEqual(createMoney(7));
+    expect(result.isLeft()).toBe(true);
+    expect(result.extract()).toBe(AccountResult.DEPOSIT_NOT_PERMITTED);
   });
 
   it('should not withdraw money if source account has not enough money', () => {
     const sourceAccount = createAccount('9873', createMoney(0));
     const targetAccount = createAccount('234', createMoney(4));
 
-    const { sourceAccount: source, targetAccount: target } = withdrawMoney(
-      sourceAccount,
-      targetAccount,
-      createMoney(10)
-    );
+    const result = withdrawMoney(sourceAccount, targetAccount, createMoney(10));
 
-    expect(getBalance(source)).toEqual(createMoney(0));
-    expect(getBalance(target)).toEqual(createMoney(4));
+    expect(result.isLeft()).toBe(true);
+    expect(result.extract()).toBe(AccountResult.WITHDRAW_NOT_PERMITTED);
   });
 });

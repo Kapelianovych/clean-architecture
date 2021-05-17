@@ -1,19 +1,18 @@
-import { Flavor, pipe } from '@fluss/core';
+import { Flavor, left, pipe, right } from '@fluss/core';
 
 import { Activity, createActivity } from './activity.entity';
+import {
+  Money,
+  sumMoney,
+  subtractMoney,
+  isPositiveOrZero,
+} from './money.entity';
 import {
   ActivityWindow,
   calculateBalance,
   addActivityToWindow,
   createActivityWindow,
 } from './activity_window.entity';
-import {
-  Money,
-  sumMoney,
-  negateMoney,
-  subtractMoney,
-  isPositiveOrZero,
-} from './money.entity';
 
 export type AccountId = Flavor<string, 'AccountId'>;
 
@@ -27,6 +26,11 @@ export interface Account {
   readonly state: AccountState;
   readonly baseLineBalance: Money;
   readonly activityWindow: ActivityWindow;
+}
+
+export enum AccountResult {
+  DEPOSIT_NOT_PERMITTED,
+  WITHDRAW_NOT_PERMITTED,
 }
 
 const createAccountState = (
@@ -70,22 +74,33 @@ export const withdrawMoney = (
   targetAccount: Account,
   money: Money
 ) =>
-  mayWithdrawMoney(getBalance(sourceAccount), money) &&
-  mayDepositMoney(targetAccount)
-    ? {
-        sourceAccount: attachActivity(
-          sourceAccount,
-          createActivity(sourceAccount._id, targetAccount._id, money)
-        ),
-        targetAccount: attachActivity(
-          targetAccount,
-          createActivity(sourceAccount._id, targetAccount._id, money)
-        ),
-      }
-    : { sourceAccount, targetAccount };
+  mayWithdrawMoney(getBalance(sourceAccount), money)
+    ? mayDepositMoney(targetAccount)
+      ? right({
+          emitter: attachActivity(
+            sourceAccount,
+            createActivity(
+              sourceAccount._id,
+              sourceAccount._id,
+              targetAccount._id,
+              money
+            )
+          ),
+          recipient: attachActivity(
+            targetAccount,
+            createActivity(
+              sourceAccount._id,
+              sourceAccount._id,
+              targetAccount._id,
+              money
+            )
+          ),
+        })
+      : left(AccountResult.DEPOSIT_NOT_PERMITTED)
+    : left(AccountResult.WITHDRAW_NOT_PERMITTED);
 
 export const depositMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
-) => withdrawMoney(sourceAccount, targetAccount, negateMoney(money));
+) => withdrawMoney(targetAccount, sourceAccount, money);
