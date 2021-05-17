@@ -13,10 +13,12 @@ describe('account entity', () => {
   it("should get account's balance", () => {
     const accountId = '41';
 
+    const date = new Date();
+
     const activityWindow = createActivityWindow([
-      createActivity('42', '42', accountId, createMoney(30)),
-      createActivity('42', '42', accountId, createMoney(170)),
-      createActivity(accountId, accountId, '42', createMoney(300)),
+      createActivity('42', '42', accountId, createMoney(30), date, 1),
+      createActivity('42', '42', accountId, createMoney(170), date, 2),
+      createActivity(accountId, accountId, '42', createMoney(300), date, 3),
     ]);
     const account = createAccount(accountId, createMoney(100), activityWindow);
 

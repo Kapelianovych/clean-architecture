@@ -2,18 +2,17 @@ import { Flavor, left, pipe, right } from '@fluss/core';
 
 import { Activity, createActivity } from './activity.entity';
 import {
+  Money,
+  sumMoney,
+  subtractMoney,
+  isPositiveOrZero,
+} from './money.entity';
+import {
   ActivityWindow,
   calculateBalance,
   addActivityToWindow,
   createActivityWindow,
 } from './activity_window.entity';
-import {
-  Money,
-  sumMoney,
-  negateMoney,
-  subtractMoney,
-  isPositiveOrZero,
-} from './money.entity';
 
 export type AccountId = Flavor<string, 'AccountId'>;
 

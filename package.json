@@ -22,7 +22,11 @@
   },
   "dependencies": {
     "@fluss/core": "^0.19.1",
+    "@prostory/mountain": "^1.0.0-alpha.1",
     "bignumber.js": "^9.0.1",
+    "reflect-metadata": "^0.1.13",
+    "sqlite3": "^5.0.2",
+    "typeorm": "^0.2.32",
     "uuid": "^8.3.2"
   }
 }
