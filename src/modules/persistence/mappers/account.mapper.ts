@@ -1,6 +1,6 @@
 import { calculateBalance } from '../../../domains/entities/activity_window.entity';
-import { AccountOrmEntity } from '../account.orm_entity';
-import { ActivityOrmEntity } from '../activity.orm_entity';
+import { AccountOrmEntity } from '../entities/account.orm_entity';
+import { ActivityOrmEntity } from '../entities/activity.orm_entity';
 import { Account, createAccount } from '../../../domains/entities/account.entity';
 import { mapActivityWindowToDomain } from './activity_window.mapper';
 

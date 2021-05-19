@@ -1,5 +1,5 @@
 import { createMoney } from '../../../domains/entities/money.entity';
-import { ActivityOrmEntity } from '../activity.orm_entity';
+import { ActivityOrmEntity } from '../entities/activity.orm_entity';
 import {
   Activity,
   createActivity,

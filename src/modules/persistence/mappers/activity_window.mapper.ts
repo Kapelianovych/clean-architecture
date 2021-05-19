@@ -1,4 +1,4 @@
-import { ActivityOrmEntity } from '../activity.orm_entity';
+import { ActivityOrmEntity } from '../entities/activity.orm_entity';
 import { mapActivityToDomain } from './activity.mapper';
 import {
   ActivityWindow,
