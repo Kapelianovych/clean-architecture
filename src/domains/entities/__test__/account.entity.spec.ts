@@ -37,9 +37,8 @@ describe('account entity', () => {
     const result = withdrawMoney(sourceAccount, targetAccount, money);
 
     expect(result.isRight()).toBe(true);
-    result.map(({ emitter, recipient }) => {
-      expect(getBalance(emitter)).toEqual(createMoney(8));
-      expect(getBalance(recipient)).toEqual(createMoney(9));
+    result.map((account) => {
+      expect(getBalance(account)).toEqual(createMoney(8));
     });
   });
 
@@ -53,9 +52,8 @@ describe('account entity', () => {
     const result = depositMoney(sourceAccount, targetAccount, createMoney(2));
 
     expect(result.isRight()).toBe(true);
-    result.map(({ emitter, recipient }) => {
-      expect(getBalance(recipient)).toEqual(createMoney(12));
-      expect(getBalance(emitter)).toEqual(createMoney(5));
+    result.map((account) => {
+      expect(getBalance(account)).toEqual(createMoney(5));
     });
   });
 

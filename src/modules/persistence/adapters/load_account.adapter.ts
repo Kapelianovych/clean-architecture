@@ -28,4 +28,4 @@ const loadAccountAdapter =
     return mapAccountToDomain(account, activities);
   };
 
-provide(loadAccountPortSymbol).toFactory(() => loadAccountAdapter());
+provide(loadAccountPortSymbol).asFactory(loadAccountAdapter);

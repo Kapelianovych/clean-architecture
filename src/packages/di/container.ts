@@ -1,9 +1,13 @@
 import { maybe } from '@fluss/core';
 
-const container = new Map<symbol, object>();
+interface Injectable<T> {
+  key: symbol;
+  bean: T;
+  single: boolean;
+  isFactory: boolean;
+}
 
-const isFactory = <T>(value: unknown): value is () => T =>
-  typeof value === 'function';
+const container = new Map<symbol, Injectable<unknown>>();
 
 const setOptions = <T>(key: symbol) => ({
   single: () =>
@@ -13,17 +17,33 @@ const setOptions = <T>(key: symbol) => ({
 });
 
 export const provide = (key: symbol) => ({
-  to: <T>(instance: T) => {
-    container.set(key, { key, bean: instance, single: false });
+  as: <T>(instance: T) => {
+    container.set(key, {
+      key,
+      bean: instance,
+      single: false,
+      isFactory: false,
+    });
     return setOptions(key);
   },
-  toFactory: <T extends () => unknown>(factory: T) => {
-    container.set(key, { key, bean: factory, single: false });
+  asFactory: <T extends () => unknown>(factory: T) => {
+    container.set(key, { key, bean: factory, single: false, isFactory: true });
     return setOptions(key);
   },
 });
 
 export const inject = <T>(key: symbol): T => {
-  const bean = container.get(key) as T | (() => T);
-  return isFactory(bean) ? bean() : bean;
+  const injectable = container.get(key);
+
+  if (injectable === undefined) {
+    // We intentionally throw here an error to fail program
+    // while development.
+    throw new Error(
+      `You tried to inject undefined bean with key: ${Symbol.keyFor(key)}`
+    );
+  }
+
+  return injectable.isFactory
+    ? (injectable.bean as () => T)()
+    : (injectable.bean as T);
 };

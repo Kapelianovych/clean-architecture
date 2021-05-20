@@ -18,7 +18,7 @@ const updateAccountAdapter =
       ActivityOrmEntity
     )
   ): UpdateAccountPort =>
-  (account) =>
+  async (account) =>
     Promise.all(
       account.activityWindow.activities.map((activity) => {
         if (activity._id === undefined) {
@@ -34,4 +34,4 @@ const updateAccountAdapter =
         .every((isSuccessful) => isSuccessful)
     );
 
-provide(updateAccountPortSymbol).toFactory(() => updateAccountAdapter());
+provide(updateAccountPortSymbol).asFactory(updateAccountAdapter);

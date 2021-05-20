@@ -4,6 +4,7 @@
   "private": true,
   "description": "A sample payment service",
   "scripts": {
+    "start": "node build/index.js",
     "build": "rollup -c",
     "test": "jest"
   },

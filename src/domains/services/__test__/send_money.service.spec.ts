@@ -25,6 +25,6 @@ describe('sendMoneyService', () => {
 
     await sendMoneyService(loadAccountPort, updateAccountPort)(command);
 
-    expect(updateAccountPort).toBeCalledTimes(2);
+    expect(updateAccountPort).toBeCalledTimes(1);
   });
 });
