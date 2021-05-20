@@ -1,4 +1,4 @@
-import { Flavor, left, pipe, right } from '@fluss/core';
+import { Either, Flavor, left, pipe, right } from '@fluss/core';
 
 import { Activity, createActivity } from './activity.entity';
 import {
@@ -73,11 +73,11 @@ export const withdrawMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
-) =>
+): Either<AccountResult, Account> =>
   mayWithdrawMoney(getBalance(sourceAccount), money)
     ? mayDepositMoney(targetAccount)
-      ? right({
-          emitter: attachActivity(
+      ? right(
+          attachActivity(
             sourceAccount,
             createActivity(
               sourceAccount._id,
@@ -85,17 +85,8 @@ export const withdrawMoney = (
               targetAccount._id,
               money
             )
-          ),
-          recipient: attachActivity(
-            targetAccount,
-            createActivity(
-              sourceAccount._id,
-              sourceAccount._id,
-              targetAccount._id,
-              money
-            )
-          ),
-        })
+          )
+        )
       : left(AccountResult.DEPOSIT_NOT_PERMITTED)
     : left(AccountResult.WITHDRAW_NOT_PERMITTED);
 
@@ -103,4 +94,5 @@ export const depositMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
-) => withdrawMoney(targetAccount, sourceAccount, money);
+): Either<AccountResult, Account> =>
+  withdrawMoney(targetAccount, sourceAccount, money);
