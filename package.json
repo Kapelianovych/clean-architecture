@@ -4,6 +4,7 @@
   "private": true,
   "description": "A sample payment service",
   "scripts": {
+    "prestart": "npm run build",
     "start": "node build/index.js",
     "build": "rollup -c",
     "test": "jest"
@@ -29,7 +30,7 @@
   },
   "dependencies": {
     "@fluss/core": "^0.19.1",
-    "@prostory/mountain": "^1.0.0-alpha.1",
+    "@prostory/mountain": "^1.0.0-alpha.2",
     "bignumber.js": "^9.0.1",
     "reflect-metadata": "^0.1.13",
     "sqlite3": "^5.0.2",
