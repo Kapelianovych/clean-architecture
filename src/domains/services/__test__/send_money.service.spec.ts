@@ -9,22 +9,48 @@ import { createSendMoneyCommand } from '../../ports/in/send_money.command';
 import {
   Account,
   AccountId,
+  getBalance,
   createAccount,
 } from '../../entities/account.entity';
 
 describe('sendMoneyService', () => {
   it('should success transaction', async () => {
-    const accountId = '41';
-
-    const loadAccountPort: LoadAccountPort = jest.fn(async (_: AccountId) =>
-      createAccount(accountId, createMoney(10), createActivityWindow())
+    const sourceAccountId: AccountId = '41';
+    let sourceAccount = createAccount(
+      sourceAccountId,
+      createMoney(10),
+      createActivityWindow()
     );
-    const updateAccountPort: UpdateAccountPort = jest.fn(async (_: Account) => true);
 
-    const command = createSendMoneyCommand(accountId, '42', createMoney(4));
+    const targetAccountId: AccountId = '42';
+    let targetAccount = createAccount(
+      targetAccountId,
+      createMoney(1),
+      createActivityWindow()
+    );
+
+    const loadAccountPort: LoadAccountPort = jest.fn(async (id: AccountId) =>
+      id === sourceAccountId ? sourceAccount : targetAccount
+    );
+    const updateAccountPort: UpdateAccountPort = jest.fn(
+      async (updatedAccount: Account) => {
+        updatedAccount._id === sourceAccountId
+          ? (sourceAccount = updatedAccount)
+          : (targetAccount = updatedAccount);
+        return true;
+      }
+    );
+
+    const command = createSendMoneyCommand(
+      sourceAccountId,
+      targetAccountId,
+      createMoney(4)
+    );
 
     await sendMoneyService(loadAccountPort, updateAccountPort)(command);
 
-    expect(updateAccountPort).toBeCalledTimes(1);
+    expect(updateAccountPort).toBeCalledTimes(2);
+    expect(getBalance(sourceAccount).amount.toNumber()).toBe(6);
+    expect(getBalance(targetAccount).amount.toNumber()).toBe(5);
   });
 });
