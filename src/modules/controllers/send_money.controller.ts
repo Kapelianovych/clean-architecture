@@ -39,10 +39,10 @@ const gatherSearchParameters = (
 const success = (request: Request) => () =>
   responseFor(request)
     .header(constants.HTTP2_HEADER_STATUS, String(constants.HTTP_STATUS_OK))
-    .body('Succeed. targetAccountId is happy.')
+    .body('Succeed. Target account is happy.')
     .end();
 
-const forbid = (request: Request) => (code: AccountResult) => {
+const forbidden = (request: Request) => (code: AccountResult) => {
   responseFor(request)
     .header(
       constants.HTTP2_HEADER_STATUS,
@@ -87,7 +87,9 @@ export const sendMoneyController = (
             targetId as AccountId,
             createMoney(Number(moneyAmount))
           )
-        ).then((result) => result.map(success(request)).handle(forbid(request)))
+        ).then((result) =>
+          result.map(success(request)).handle(forbidden(request))
+        )
       )
       .fill(missedParameters(request));
   });

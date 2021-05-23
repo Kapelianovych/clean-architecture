@@ -9,7 +9,7 @@ interface Injectable<T> {
 
 const container = new Map<symbol, Injectable<unknown>>();
 
-const setOptions = <T>(key: symbol) => ({
+const setOptions = (key: symbol) => ({
   single: () =>
     void maybe(container.get(key)).map((injectable) =>
       container.set(key, { ...injectable, single: true })
@@ -32,8 +32,13 @@ export const provide = (key: symbol) => ({
   },
 });
 
+const getBean = <T>(injectable: Injectable<T | (() => T)>): T =>
+  injectable.isFactory
+    ? (injectable.bean as () => T)()
+    : (injectable.bean as T);
+
 export const inject = <T>(key: symbol): T => {
-  const injectable = container.get(key);
+  const injectable = container.get(key) as Injectable<T> | undefined;
 
   if (injectable === undefined) {
     // We intentionally throw here an error to fail program
@@ -43,7 +48,7 @@ export const inject = <T>(key: symbol): T => {
     );
   }
 
-  return injectable.isFactory
-    ? (injectable.bean as () => T)()
-    : (injectable.bean as T);
+  return injectable.single
+    ? (provide(key).as(getBean<T>(injectable)), inject<T>(key))
+    : getBean<T>(injectable);
 };
