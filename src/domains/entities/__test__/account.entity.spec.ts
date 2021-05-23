@@ -53,7 +53,7 @@ describe('account entity', () => {
 
     expect(result.isRight()).toBe(true);
     result.map((account) => {
-      expect(getBalance(account)).toEqual(createMoney(5));
+      expect(getBalance(account)).toEqual(createMoney(12));
     });
   });
 

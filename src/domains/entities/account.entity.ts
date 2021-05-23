@@ -69,30 +69,39 @@ const attachActivity = (account: Account, activity: Activity): Account =>
     account.state
   );
 
+const transferMoney =
+  (ownerId: AccountId) =>
+  (
+    sourceAccount: Account,
+    targetAccount: Account,
+    money: Money
+  ): Either<AccountResult, Account> =>
+    mayWithdrawMoney(getBalance(sourceAccount), money)
+      ? mayDepositMoney(targetAccount)
+        ? right(
+            attachActivity(
+              ownerId === sourceAccount._id ? sourceAccount : targetAccount,
+              createActivity(
+                ownerId,
+                sourceAccount._id,
+                targetAccount._id,
+                money
+              )
+            )
+          )
+        : left(AccountResult.DEPOSIT_NOT_PERMITTED)
+      : left(AccountResult.WITHDRAW_NOT_PERMITTED);
+
 export const withdrawMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
 ): Either<AccountResult, Account> =>
-  mayWithdrawMoney(getBalance(sourceAccount), money)
-    ? mayDepositMoney(targetAccount)
-      ? right(
-          attachActivity(
-            sourceAccount,
-            createActivity(
-              sourceAccount._id,
-              sourceAccount._id,
-              targetAccount._id,
-              money
-            )
-          )
-        )
-      : left(AccountResult.DEPOSIT_NOT_PERMITTED)
-    : left(AccountResult.WITHDRAW_NOT_PERMITTED);
+  transferMoney(sourceAccount._id)(sourceAccount, targetAccount, money);
 
 export const depositMoney = (
   sourceAccount: Account,
   targetAccount: Account,
   money: Money
 ): Either<AccountResult, Account> =>
-  withdrawMoney(targetAccount, sourceAccount, money);
+  transferMoney(sourceAccount._id)(targetAccount, sourceAccount, money);
