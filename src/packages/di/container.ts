@@ -44,7 +44,7 @@ export const inject = <T>(key: symbol): T => {
     // We intentionally throw here an error to fail program
     // while development.
     throw new Error(
-      `You tried to inject undefined bean with key: ${Symbol.keyFor(key)}`
+      `You tried to inject undefined bean with key: ${String(key)}`
     );
   }
 
