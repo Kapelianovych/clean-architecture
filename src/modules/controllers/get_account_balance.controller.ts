@@ -3,18 +3,20 @@ import { constants } from 'http2';
 import { accessRequest, get, responseFor } from '@prostory/mountain';
 
 import { inject } from '../../packages/di/container';
-import { loadAccountPortSymbol } from '../../domains/ports/out/load_account.port';
-import { getAccountBalanceService } from '../../domains/services/get_account_balance.service';
+import {
+  GetAccountBalanceQuery,
+  getAccountBalanceQuerySymbol,
+} from '../../domains/ports/in/get_account_balance.query';
 
 export const getAccountBalanceController = (
-  getAccountBalanceQuery = getAccountBalanceService(
-    inject(loadAccountPortSymbol)
+  getAccountBalance = inject<GetAccountBalanceQuery>(
+    getAccountBalanceQuerySymbol
   )
 ) =>
   get('/balance/(\\d+)', (request) => {
     const { parameters } = accessRequest(request);
 
-    getAccountBalanceQuery(parameters[0])
+    getAccountBalance(parameters[0])
       .then((money) =>
         responseFor(request)
           .body(

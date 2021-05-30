@@ -1,10 +1,20 @@
 import { Right } from '@fluss/core';
 
-import { LoadAccountPort } from '../ports/out/load_account.port';
-import { SendMoneyUseCase } from '../ports/in/send_money.use_case';
-import { SendMoneyCommand } from '../ports/in/send_money.command';
-import { UpdateAccountPort } from '../ports/out/update_account.port';
+import { inject, provide } from '../../packages/di/container';
 import { depositMoney, withdrawMoney } from '../entities/account.entity';
+import {
+  LoadAccountPort,
+  loadAccountPortSymbol,
+} from '../ports/out/load_account.port';
+import {
+  SendMoneyUseCase,
+  sendMoneyUseCaseSymbol,
+} from '../ports/in/send_money.use_case';
+import { SendMoneyCommand } from '../ports/in/send_money.command';
+import {
+  UpdateAccountPort,
+  updateAccountPortSymbol,
+} from '../ports/out/update_account.port';
 
 export const sendMoneyService =
   (
@@ -32,3 +42,10 @@ export const sendMoneyService =
         ) as Right<Promise<boolean>>
     );
   };
+
+provide(sendMoneyUseCaseSymbol).asFactory(() =>
+  sendMoneyService(
+    inject(loadAccountPortSymbol),
+    inject(updateAccountPortSymbol)
+  )
+);

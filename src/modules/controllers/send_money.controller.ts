@@ -13,15 +13,12 @@ import {
 
 import { inject } from '../../packages/di/container';
 import { createMoney } from '../../domains/entities/money.entity';
-import { SendMoneyUseCase } from '../../domains/ports/in/send_money.use_case';
-import { sendMoneyService } from '../../domains/services/send_money.service';
-import { loadAccountPortSymbol } from '../../domains/ports/out/load_account.port';
+import { AccountResult } from '../../domains/entities/account.entity';
 import { createSendMoneyCommand } from '../../domains/ports/in/send_money.command';
-import { updateAccountPortSymbol } from '../../domains/ports/out/update_account.port';
 import {
-  AccountId,
-  AccountResult,
-} from '../../domains/entities/account.entity';
+  SendMoneyUseCase,
+  sendMoneyUseCaseSymbol,
+} from '../../domains/ports/in/send_money.use_case';
 
 const gatherSearchParameters = (
   ...parameters: ReadonlyArray<Option<string>>
@@ -67,10 +64,7 @@ const missedParameters = (request: Request) => () =>
     .end();
 
 export const sendMoneyController = (
-  sendMoneyUseCase: SendMoneyUseCase = sendMoneyService(
-    inject(loadAccountPortSymbol),
-    inject(updateAccountPortSymbol)
-  )
+  sendMoneyUseCase: SendMoneyUseCase = inject(sendMoneyUseCaseSymbol)
 ) =>
   get('/account/send', (request) => {
     const { url } = accessRequest(request);
@@ -82,11 +76,7 @@ export const sendMoneyController = (
     gatherSearchParameters(sourceAccountId, targetAccountId, amount)
       .map(([sourceId, targetId, moneyAmount]) =>
         sendMoneyUseCase(
-          createSendMoneyCommand(
-            sourceId as AccountId,
-            targetId as AccountId,
-            createMoney(Number(moneyAmount))
-          )
+          createSendMoneyCommand(sourceId, targetId, createMoney(moneyAmount))
         ).then((result) =>
           result.map(success(request)).handle(forbidden(request))
         )
